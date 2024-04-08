@@ -1,0 +1,31 @@
+name: Python Exercise
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build container
+        run: docker build -t ee-data-engineering-challenge:0.0.1 .
+
+      - name: Install, lint and test
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ee-data-engineering-challenge:0.0.1
+          options: -v ${{ github.workspace }}:/home/dataeng/
+          run: |
+            mkdir -p .cache/pypoetry/virtualenvs
+            poetry install --with dev
+            poetry run exercise lint
+            poetry run exercise test
